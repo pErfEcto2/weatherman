@@ -1,0 +1,34 @@
+[Unit]
+Description=The weatherman is telling sth about your weather
+
+# Requirements
+Requires=network.target
+
+# Dependency ordering
+After=network.target
+
+[Service]
+TimeoutStartSec=0
+RestartSec=10
+Restart=always
+
+# path to app
+WorkingDirectory=/root/
+# the user that you want to run app by
+User=root
+RemainAfterExit=yes
+
+# KillSignal=SIGQUIT
+KillSignal=SIGTERM
+# PIDFile=/tmp/uwsgiapp.pid
+# Type=notify
+# NotifyAccess=all
+
+# Main process
+ExecStart=/home/projects/weatherman/bot_starter.sh
+ExecStop=/usr/bin/pkill -f weatherman.py
+
+# TimeoutStopSec=10
+
+[Install]
+WantedBy=multi-user.target
