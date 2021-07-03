@@ -1,3 +1,3 @@
 #!/bin/bash
 
-python3 /home/projects/weatherman/main.py &
+python3 /home/projects/weatherman/weatherman.py &
