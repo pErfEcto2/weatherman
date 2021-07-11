@@ -92,7 +92,7 @@ def current_geo(message):
 "
     res += f"Температура воздуха: {temperature_air}°С, ощущается как {temperature_comfort}°С. \n\
 Вся информация предоставлена сервисом [Gismeteo](https://www.gismeteo.ru/)."
-    bot.send_message(message.chat.id, res, parse_mode="Markdown", disable_web_page_preview=True)
+    bot.send_message(message.chat.id, res, parse_mode="Markdown", disable_web_page_preview=True, reply_markup=keyboard1)
     
 
 bot.polling()
