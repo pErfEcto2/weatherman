@@ -1,8 +1,10 @@
 #import libs
-from time import clock_gettime
+#from time import clock_gettime
+import time
 import telebot
-import json
 import requests
+import logging
+import os
 
 #define pathes to necessary files
 bot_id_path = "/home/projects/weatherman/bot_id"
@@ -15,6 +17,10 @@ cancel_button = "/cancel"
 help_but = "/help"
 user_latitude = 0
 user_longitude = 0
+
+#define logging format
+logging.basicConfig(filename="/var/log/weatherman/log.txt", level=logging.DEBUG, format="%(asctime)s:%(message)s")
+logging.debug("App started!")
 
 #open some files
 with open(bot_id_path, "r") as f:
@@ -93,6 +99,10 @@ def current_geo(message):
     res += f"Температура воздуха: {temperature_air}°С, ощущается как {temperature_comfort}°С. \n\
 Вся информация предоставлена сервисом [Gismeteo](https://www.gismeteo.ru/)."
     bot.send_message(message.chat.id, res, parse_mode="Markdown", disable_web_page_preview=True, reply_markup=keyboard1)
-    
 
-bot.polling()
+try:
+    bot.polling()
+except Exception as e:
+    logging.debug(f"Error: {e}")
+    time.sleep(15)
+    os.system("systemctl restart weatherman.service")
