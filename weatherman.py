@@ -9,8 +9,8 @@ import psycopg2 as ps
 #define pathes to necessary files
 bot_id_path = "/home/projects/weatherman/bot_id"
 gismeteo_token_path = "/home/projects/weatherman/gismeteo_token"
-db_info_path = "dbInfo"
-creator_path = "creator"
+db_info_path = "/home/projects/weatherman/dbInfo"
+creator_path = "/home/projects/weatherman/creator"
 
 def hashToDB(mess, db_info: list):
     c = 0
