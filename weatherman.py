@@ -1,14 +1,41 @@
-#import libs
-#from time import clock_gettime
 import time
 import telebot
 import requests
 import logging
 import os
+import hashlib as h
+import psycopg2 as ps
 
 #define pathes to necessary files
 bot_id_path = "/home/projects/weatherman/bot_id"
 gismeteo_token_path = "/home/projects/weatherman/gismeteo_token"
+db_info_path = "dbInfo.txt"
+creator_path = "creator"
+
+def hashToDB(mess, db_info: list):
+    c = 0
+    with ps.connect(dbname=db_info[1], user=db_info[2]) as conn:
+        with conn.cursor() as cursor:
+            conn.autocommit = True
+            command = f"SELECT * FROM {db_info[0]}"
+            cursor.execute(command)
+            for row in cursor:
+                hashUsername = h.md5(mess.from_user.username.encode()).hexdigest()
+                if hashUsername != row[1]:
+                    c += 1
+            if c == cursor.rowcount:
+                command = f"insert into {db_info[0]} (hash) values ('{hashUsername}')"
+                cursor.execute(command)
+            command = f"update users set cnt = cnt + 1 where hash = '{hashUsername}'"
+            cursor.execute(command)
+
+def getNumUsers(db_info: list):
+    with ps.connect(dbname=db_info[1], user=db_info[2]) as conn:
+        with conn.cursor() as cursor:
+            conn.autocommit = True
+            command = f"SELECT * FROM {db_info[0]}"
+            cursor.execute(command)
+            return cursor.rowcount
 
 #define some vars
 keyboard = ["покажи погоду"]
@@ -28,6 +55,12 @@ with open(bot_id_path, "r") as f:
 
 with open(gismeteo_token_path, "r") as f:
     gismeteo_token = f.readline().strip()
+
+with open(db_info_path, "r") as f:
+    db_info = f.readline().split()
+
+with open(creator_path, "r") as f:
+    creator = f.readline()
 
 #use bot chat id
 bot = telebot.TeleBot(bot_id)
@@ -49,13 +82,12 @@ def start_message(message):
 def start(message):
     #ask user about his geolocation
     if message.text == keyboard[0]:
+        hashToDB(message, db_info)
         bot.send_message(message.chat.id, "Поделись со мной своим геоположением и я тебе скажу погоду", reply_markup=keyboard2)
     #what to do when cancel button pressed
     elif message.text == cancel_button:
         bot.send_message(message.chat.id, "Готово", reply_markup=keyboard1)
-        user_latitude = 0
-        user_longitude = 0
-    #in another options
+    #help message
     elif message.text == help_but:
         res = "Привет, я великий бот, показывающий погоду.\n\
 Все довольно просто, у меня есть 3 кнопки:\n\
@@ -64,6 +96,10 @@ def start(message):
 Вторая покажет это окно.\n\
 Третьей ты можешь вернуться к стартовым кнопкам."
         bot.send_message(message.chat.id, res)
+
+        if message.from_user.username == creator:
+            res = f"{getNumUsers(db_info)} - столько людей используют этого бота."
+            bot.send_message(message.chat.id, res)
     else:
         bot.send_message(message.chat.id, "Я не понель(")
 
@@ -74,6 +110,7 @@ def current_geo(message):
     get_req = f"https://api.gismeteo.net/v2/weather/current/?latitude={str(message.location.latitude)}&longitude={str(message.location.longitude)}"
     get_headers = {"X-Gismeteo-Token": gismeteo_token}
     response = requests.get(get_req, headers=get_headers)
+
     json_response = response.json()
     pressure = json_response["response"]["pressure"]["mm_hg_atm"]
     humidity = json_response["response"]["humidity"]["percent"]
@@ -84,18 +121,16 @@ def current_geo(message):
     temperature_air = json_response["response"]["temperature"]["air"]["C"]
     temperature_comfort = json_response["response"]["temperature"]["comfort"]["C"]
     description = json_response["response"]["description"]["full"].lower()
+
     res = f"На улице у вас {description}. \n\
 Давление: {pressure} мм ртутного столба. \n\
 Влажность: {humidity}%. \n\
-Скорость ветра: {wind_speed_km_h} км/ч или {wind_speed_m_s} м/с. \n\
-Облачность: {cloudiness}%. \n\
-"
+Скорость ветра: {wind_speed_m_s} м/с или {wind_speed_km_h} км/ч. \n\
+Облачность: {cloudiness}%. \n"
     if storm == False:
-        res += "Грозы не будет. \n\
-"
+        res += "Грозы не будет. \n"
     else:
-        res += "Возможна гроза. \n\
-"
+        res += "Возможна гроза. \n"
     res += f"Температура воздуха: {temperature_air}°С, ощущается как {temperature_comfort}°С. \n\
 Вся информация предоставлена сервисом [Gismeteo](https://www.gismeteo.ru/)."
     bot.send_message(message.chat.id, res, parse_mode="Markdown", disable_web_page_preview=True, reply_markup=keyboard1)
