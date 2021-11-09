@@ -139,4 +139,5 @@ try:
 except Exception as e:
     logging.error(f"Error: {e}")
     time.sleep(15)
+    logging.info("Trying to restart app")
     os.system("systemctl restart weatherman.service")
