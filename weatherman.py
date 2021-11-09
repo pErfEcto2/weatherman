@@ -12,6 +12,10 @@ gismeteo_token_path = "/home/projects/weatherman/gismeteo_token"
 db_info_path = "/home/projects/weatherman/dbInfo"
 creator_path = "/home/projects/weatherman/creator"
 
+#define logging format
+logging.basicConfig(filename="/var/log/weatherman/log.txt", level=logging.INFO, format="%(asctime)s:%(message)s")
+logging.debug("App started!")
+
 def hashToDB(mess, db_info: list):
     c = 0
     with ps.connect(dbname=db_info[1], user=db_info[2]) as conn:
@@ -24,6 +28,7 @@ def hashToDB(mess, db_info: list):
                 if hashUsername != row[1]:
                     c += 1
             if c == cursor.rowcount:
+                logging.info("New user added")
                 command = f"insert into {db_info[0]} (hash) values ('{hashUsername}')"
                 cursor.execute(command)
             command = f"update users set cnt = cnt + 1 where hash = '{hashUsername}'"
@@ -42,12 +47,6 @@ keyboard = ["покажи погоду"]
 show_geo_button = "поделиться геоположением"
 cancel_button = "/cancel"
 help_but = "/help"
-user_latitude = 0
-user_longitude = 0
-
-#define logging format
-logging.basicConfig(filename="/var/log/weatherman/log.txt", level=logging.DEBUG, format="%(asctime)s:%(message)s")
-logging.debug("App started!")
 
 #open some files
 with open(bot_id_path, "r") as f:
@@ -138,6 +137,6 @@ def current_geo(message):
 try:
     bot.polling()
 except Exception as e:
-    logging.debug(f"Error: {e}")
+    logging.error(f"Error: {e}")
     time.sleep(15)
     os.system("systemctl restart weatherman.service")
