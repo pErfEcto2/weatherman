@@ -2,3 +2,4 @@ bot_id
 gismeteo_token
 dbInfo
 creator
+__pycache__/
