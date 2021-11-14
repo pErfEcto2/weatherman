@@ -1,9 +1,9 @@
 import time
 import telebot
 import requests
-import logging
+import logging as log
 import os
-import hashlib as h
+import lib
 import psycopg2 as ps
 
 #define pathes to necessary files
@@ -12,38 +12,12 @@ gismeteo_token_path = "/home/projects/weatherman/gismeteo_token"
 db_info_path = "/home/projects/weatherman/dbInfo"
 creator_path = "/home/projects/weatherman/creator"
 
-#define logging format
-logging.basicConfig(filename="/var/log/weatherman/log.txt", level=logging.INFO, format="%(asctime)s:%(message)s")
-logging.debug("App started!")
-
-def hashToDB(mess, db_info: list):
-    c = 0
-    with ps.connect(dbname=db_info[1], user=db_info[2]) as conn:
-        with conn.cursor() as cursor:
-            conn.autocommit = True
-            command = f"SELECT * FROM {db_info[0]}"
-            cursor.execute(command)
-            for row in cursor:
-                hashUsername = h.md5(mess.from_user.username.encode()).hexdigest()
-                if hashUsername != row[1]:
-                    c += 1
-            if c == cursor.rowcount:
-                logging.info("New user added")
-                command = f"insert into {db_info[0]} (hash) values ('{hashUsername}')"
-                cursor.execute(command)
-            command = f"update users set cnt = cnt + 1 where hash = '{hashUsername}'"
-            cursor.execute(command)
-
-def getNumUsers(db_info: list):
-    with ps.connect(dbname=db_info[1], user=db_info[2]) as conn:
-        with conn.cursor() as cursor:
-            conn.autocommit = True
-            command = f"SELECT * FROM {db_info[0]}"
-            cursor.execute(command)
-            return cursor.rowcount
+#define log format
+log.basicConfig(filename="/var/log/weatherman/log.txt", level=log.INFO, format="%(asctime)s:%(message)s")
+log.debug("App started!")
 
 #define some vars
-keyboard = ["покажи погоду"]
+keyboard = ["покажи погоду", "шутка"]
 show_geo_button = "поделиться геоположением"
 cancel_button = "/cancel"
 help_but = "/help"
@@ -81,7 +55,7 @@ def start_message(message):
 def start(message):
     #ask user about his geolocation
     if message.text == keyboard[0]:
-        hashToDB(message, db_info)
+        lib.hashToDB(message, db_info)
         bot.send_message(message.chat.id, "Поделись со мной своим геоположением и я тебе скажу погоду", reply_markup=keyboard2)
     #what to do when cancel button pressed
     elif message.text == cancel_button:
@@ -97,8 +71,12 @@ def start(message):
         bot.send_message(message.chat.id, res)
 
         if message.from_user.username == creator:
-            res = f"{getNumUsers(db_info)} - столько людей используют этого бота."
+            res = f"{lib.getNumUsers(db_info)} - столько людей используют этого бота."
             bot.send_message(message.chat.id, res)
+    
+    elif message.text == keyboard[1]:
+        joke = lib.getJoke()
+        bot.send_message(message.chat.id, joke)
     else:
         bot.send_message(message.chat.id, "Я не понель(")
 
@@ -137,7 +115,7 @@ def current_geo(message):
 try:
     bot.polling()
 except Exception as e:
-    logging.error(f"Error: {e}")
+    log.error(f"Error: {e}")
     time.sleep(15)
-    logging.info("Trying to restart app")
+    log.info("Trying to restart app")
     os.system("systemctl restart weatherman.service")
