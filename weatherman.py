@@ -19,8 +19,8 @@ log.debug("App started!")
 #define some vars
 keyboard = ["покажи погоду", "шутка"]
 show_geo_button = "поделиться геоположением"
-cancel_button = "/cancel"
-help_but = "/help"
+cancel_button = "отмена"
+help_but = "помощь"
 
 #open some files
 with open(bot_id_path, "r") as f:
@@ -40,7 +40,7 @@ bot = telebot.TeleBot(bot_id)
 
 #make individual keyboard with our commands
 keyboard1 = telebot.types.ReplyKeyboardMarkup()
-keyboard1.row(*keyboard, help_but, cancel_button)
+keyboard1.row(*keyboard, help_but)
 keyboard2 = telebot.types.ReplyKeyboardMarkup()
 button_geo = telebot.types.KeyboardButton(text=show_geo_button, request_location=True)
 keyboard2.row(button_geo, cancel_button)
@@ -64,7 +64,7 @@ def start(message):
     elif message.text == help_but:
         res = "Привет, я великий бот, показывающий погоду.\n\
 Все довольно просто, у меня есть 3 кнопки:\n\
-\"покажи погоду\", \"/help\", \"/cancel\".\n\
+\"покажи погоду\", \"помощь\", \"отмена\".\n\
 Первая покажет тебе погоду в твоем районе.\n\
 Вторая покажет это окно.\n\
 Третьей ты можешь вернуться к стартовым кнопкам."
