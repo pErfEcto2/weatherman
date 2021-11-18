@@ -44,6 +44,14 @@ keyboard1.row(*keyboard, help_but)
 keyboard2 = telebot.types.ReplyKeyboardMarkup()
 button_geo = telebot.types.KeyboardButton(text=show_geo_button, request_location=True)
 keyboard2.row(button_geo, cancel_button)
+# help button's text
+helpAns = "Привет, я великий бот, показывающий погоду.\n\
+Все довольно просто, у меня есть 3 кнопки:\n\
+*покажи погоду*, *помощь*, *отмена*.\n\
+*Первая* покажет тебе погоду в твоем районе.\n\
+*Вторая* покажет это сообщение.\n\
+*Третья* вернет тебя к стартовым кнопкам.\n\
+В честности этого бота можешь не сомневаться, вот ссылочка на исходники [ТЫК](https://github.com/pErfEcto2/weatherman)"
 
 #bot starts with command 'start'
 @bot.message_handler(commands=['start'])
@@ -53,6 +61,7 @@ def start_message(message):
 #main functions
 @bot.message_handler(content_types=['text'])
 def start(message):
+    global helpAns
     #ask user about his geolocation
     if message.text == keyboard[0]:
         lib.hashToDB(message, db_info)
@@ -62,14 +71,7 @@ def start(message):
         bot.send_message(message.chat.id, "Готово", reply_markup=keyboard1)
     #help message
     elif message.text == help_but:
-        res = "Привет, я великий бот, показывающий погоду.\n\
-Все довольно просто, у меня есть 3 кнопки:\n\
-\"покажи погоду\", \"помощь\", \"отмена\".\n\
-Первая покажет тебе погоду в твоем районе.\n\
-Вторая покажет это окно.\n\
-Третьей ты можешь вернуться к стартовым кнопкам."
-        bot.send_message(message.chat.id, res)
-
+        bot.send_message(message.chat.id, helpAns, parse_mode="Markdown", disable_web_page_preview=True)
         if message.from_user.username == creator:
             res = f"{lib.getNumUsers(db_info)} - столько людей используют этого бота."
             bot.send_message(message.chat.id, res)
