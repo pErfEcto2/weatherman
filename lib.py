@@ -1,10 +1,6 @@
 import psycopg2 as ps
 import hashlib as h
 import requests as r
-import logging as log
-
-#define log format
-log.basicConfig(filename="/var/log/weatherman/log.txt", level=log.INFO, format="%(asctime)s:%(message)s")
 
 def hashToDB(mess, db_info: list):
     c = 0
@@ -18,7 +14,6 @@ def hashToDB(mess, db_info: list):
                 if hashUsername != row[1]:
                     c += 1
             if c == cursor.rowcount:
-                log.info("New user added")
                 command = f"insert into {db_info[0]} (hash) values ('{hashUsername}')"
                 cursor.execute(command)
             command = f"update {db_info[0]} set cnt = cnt + 1 where hash = '{hashUsername}'"
@@ -44,7 +39,4 @@ def getJoke() -> str:
     url = "http://rzhunemogu.ru/RandJSON.aspx?CType=1"
     response = r.get(url)
     if response.status_code < 300:
-        log.info(f"Request to {url} was successful")
-    else:
-        log.info(f"Request to {url} was unsuccessful")
-    return response.text[12:-3]
+        return response.text[12:-3]

@@ -1,5 +1,5 @@
 [Unit]
-Description=The weatherman is telling sth about your weather
+Description=The weatherman's beta version'
 
 # Requirements
 Requires=network.target
@@ -25,8 +25,8 @@ KillSignal=SIGTERM
 # NotifyAccess=all
 
 # Main process
-ExecStart=/home/projects/weatherman/bot_starter.sh
-ExecStop=/usr/bin/pkill -f weatherman.py
+ExecStart=/home/projects/weathermanBETA/bot_starter.sh
+ExecStop=/usr/bin/pkill -f weathermanBETA.py
 
 # TimeoutStopSec=10
 

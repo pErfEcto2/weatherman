@@ -1,20 +1,12 @@
-import time
 import telebot
 import requests
-import logging as log
-import os
 import lib
-import psycopg2 as ps
 
 #define pathes to necessary files
-bot_id_path = "/home/projects/weatherman/bot_id"
-gismeteo_token_path = "/home/projects/weatherman/gismeteo_token"
-db_info_path = "/home/projects/weatherman/dbInfo"
-creator_path = "/home/projects/weatherman/creator"
-
-#define log format
-log.basicConfig(filename="/var/log/weatherman/log.txt", level=log.INFO, format="%(asctime)s:%(message)s")
-log.debug("App started!")
+bot_id_path = "/home/projects/weathermanBETA/bot_id"
+gismeteo_token_path = "/home/projects/weathermanBETA/gismeteo_token"
+db_info_path = "/home/projects/weathermanBETA/dbInfo"
+creator_path = "/home/projects/weathermanBETA/creator"
 
 #define some vars
 keyboard = ["покажи погоду", "шутка"]
@@ -64,7 +56,7 @@ def start(message):
     global helpAns
     #ask user about his geolocation
     if message.text == keyboard[0]:
-        lib.hashToDB(message, db_info)
+        #lib.hashToDB(message, db_info)
         bot.send_message(message.chat.id, "Поделись со мной своим геоположением и я тебе скажу погоду", reply_markup=keyboard2)
     #what to do when cancel button pressed
     elif message.text == cancel_button:
@@ -77,8 +69,8 @@ def start(message):
             bot.send_message(message.chat.id, res)
     
     elif message.text == keyboard[1]:
-        joke = lib.getJoke()
-        bot.send_message(message.chat.id, joke)
+        #joke = lib.getJoke()
+        bot.send_message(message.chat.id, "Пока не работает, потому как я еще не нашел ресурс с хорошими шутками")
     else:
         bot.send_message(message.chat.id, "Я не понель(")
 
@@ -114,10 +106,4 @@ def current_geo(message):
 Вся информация предоставлена сервисом [Gismeteo](https://www.gismeteo.ru/)."
     bot.send_message(message.chat.id, res, parse_mode="Markdown", disable_web_page_preview=True, reply_markup=keyboard1)
 
-try:
-    bot.polling()
-except Exception as e:
-    log.error(f"Error: {e}")
-    time.sleep(15)
-    log.info("Trying to restart app")
-    os.system("systemctl restart weatherman.service")
+bot.polling()
