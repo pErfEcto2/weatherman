@@ -1,5 +1,5 @@
 # weatherman
-This python bot is showing weather, when you are asking him
+This python bot shows you the weather, when you ask him
 
 `git clone  https://github.com/pErfEcto2/weatherman`
 
