@@ -64,7 +64,6 @@ def start(message):
     global helpAns
     #ask user about his geolocation
     if message.text == keyboard[0]:
-        lib.hashToDB(message, db_info)
         bot.send_message(message.chat.id, "Поделись со мной своим геоположением и я тебе скажу погоду", reply_markup=keyboard2)
     #what to do when cancel button pressed
     elif message.text == cancel_button:
@@ -77,8 +76,8 @@ def start(message):
             bot.send_message(message.chat.id, res)
     
     elif message.text == keyboard[1]:
-        joke = lib.getJoke()
-        bot.send_message(message.chat.id, joke)
+        #joke = lib.getJoke()
+        bot.send_message(message.chat.id, "Пока не работает, потому как я еще не нашел ресурс с хорошими шутками")
     else:
         bot.send_message(message.chat.id, "Я не понель(")
 
@@ -86,6 +85,8 @@ def start(message):
 @bot.message_handler(content_types=['location'])
 #this function showes user's weather
 def current_geo(message):
+    lib.hashToDB(message, db_info)
+    
     get_req = f"https://api.gismeteo.net/v2/weather/current/?latitude={str(message.location.latitude)}&longitude={str(message.location.longitude)}"
     get_headers = {"X-Gismeteo-Token": gismeteo_token}
     response = requests.get(get_req, headers=get_headers)

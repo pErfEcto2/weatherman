@@ -26,7 +26,6 @@ def hashToDB(mess, db_info: list):
             command = f"select * from {db_info[0]}"
             cursor.execute(command)
             for row in cursor.fetchall():
-                print(row)
                 if not row[3]:
                     command = f"update {db_info[0]} set chatID = {mess.chat.id} where hash = '{hashUsername}'"
                     cursor.execute(command)
