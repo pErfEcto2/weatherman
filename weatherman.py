@@ -4,7 +4,6 @@ import requests
 import logging as log
 import os
 import lib
-import psycopg2 as ps
 
 #define pathes to necessary files
 bot_id_path = "/home/projects/weatherman/bot_id"
@@ -18,9 +17,17 @@ log.debug("App started!")
 
 #define some vars
 keyboard = ["покажи погоду", "шутка"]
-show_geo_button = "поделиться геоположением"
-cancel_button = "отмена"
+show_geo_but = "поделиться геоположением"
+cancel_but = "отмена"
 help_but = "помощь"
+offer_but = "/offer"
+text = """Привет,
+я обновился, и теперь ты можешь предложить любую функцию с помощью команды /offer и, возможно, в следующей версии она будет добавлена в этого бота.
+Кроме функций можно предлагать всё, что душе угодно, например, какие-либо косметические улучшения и тп.
+Так же если ты найдешь в этом боте ошибку, смело сообщай о ней с помощью той же команды.
+Спасибо за использование!
+P. S.
+Сейчас была небольшая ошибочка, но все уже исправлено"""
 
 #open some files
 with open(bot_id_path, "r") as f:
@@ -42,8 +49,8 @@ bot = telebot.TeleBot(bot_id)
 keyboard1 = telebot.types.ReplyKeyboardMarkup()
 keyboard1.row(*keyboard, help_but)
 keyboard2 = telebot.types.ReplyKeyboardMarkup()
-button_geo = telebot.types.KeyboardButton(text=show_geo_button, request_location=True)
-keyboard2.row(button_geo, cancel_button)
+button_geo = telebot.types.KeyboardButton(text=show_geo_but, request_location=True)
+keyboard2.row(button_geo, cancel_but)
 # help button's text
 helpAns = "Привет, я великий бот, показывающий погоду.\n\
 Все довольно просто, у меня есть 3 кнопки:\n\
@@ -52,6 +59,19 @@ helpAns = "Привет, я великий бот, показывающий по
 *Вторая* покажет это сообщение.\n\
 *Третья* вернет тебя к стартовым кнопкам.\n\
 В честности этого бота можешь не сомневаться, вот ссылочка на исходники [ТЫК](https://github.com/pErfEcto2/weatherman)"
+
+bot.set_my_commands([
+    telebot.types.BotCommand("/start", "Начало работы"),
+    telebot.types.BotCommand("/offer", "Предложить программисту добавить какую-либо функцию в этого бота")
+])
+
+for chatID in lib.getChatIDs(db_info):
+    print(chatID)
+    if chatID:
+        try:
+            bot.send_message(chatID, text)
+        except Exception as e:
+            log.error(f"Error: {e}")
 
 #bot starts with command 'start'
 @bot.message_handler(commands=['start'])
@@ -66,7 +86,7 @@ def start(message):
     if message.text == keyboard[0]:
         bot.send_message(message.chat.id, "Поделись со мной своим геоположением и я тебе скажу погоду", reply_markup=keyboard2)
     #what to do when cancel button pressed
-    elif message.text == cancel_button:
+    elif message.text == cancel_but:
         bot.send_message(message.chat.id, "Готово", reply_markup=keyboard1)
     #help message
     elif message.text == help_but:
@@ -78,8 +98,10 @@ def start(message):
     elif message.text == keyboard[1]:
         #joke = lib.getJoke()
         bot.send_message(message.chat.id, "Пока не работает, потому как я еще не нашел ресурс с хорошими шутками")
-    else:
-        bot.send_message(message.chat.id, "Я не понель(")
+    
+    elif message.text == offer_but:
+        bot.send_message(message.chat.id, "Теперь можешь написать, что хотелось бы увидеть в этом боте или что можно исправить")
+        bot.register_next_step_handler(message, lib.saveOffer, bot)
 
 #when user sends his geolocation
 @bot.message_handler(content_types=['location'])
