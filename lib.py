@@ -6,7 +6,7 @@ import time as t
 
 #define log format
 log.basicConfig(filename="/var/log/weatherman/log.txt", level=log.INFO, format="%(asctime)s:%(message)s")
-pathToOffers = "offers.txt"
+pathToOffers = "/var/log/weatherman/offers.txt"
 
 def hashToDB(mess, db_info: list):
     c = 0

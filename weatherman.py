@@ -65,13 +65,13 @@ bot.set_my_commands([
     telebot.types.BotCommand("/offer", "Предложить программисту добавить какую-либо функцию в этого бота")
 ])
 
-for chatID in lib.getChatIDs(db_info):
-    print(chatID)
-    if chatID:
-        try:
-            bot.send_message(chatID, text)
-        except Exception as e:
-            log.error(f"Error: {e}")
+#for chatID in lib.getChatIDs(db_info):
+#    print(chatID)
+#    if chatID:
+#        try:
+#            bot.send_message(chatID, text)
+#        except Exception as e:
+#            log.error(f"Error: {e}")
 
 #bot starts with command 'start'
 @bot.message_handler(commands=['start'])
