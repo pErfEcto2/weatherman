@@ -16,11 +16,14 @@ log.basicConfig(filename="/var/log/weatherman/log.txt", level=log.INFO, format="
 log.debug("App started!")
 
 #define some vars
-keyboard = ["покажи погоду", "шутка"]
+show_weather_but = "покажи погоду"
+joke_but = "шутка"
 show_geo_but = "поделиться геоположением"
 cancel_but = "отмена"
 help_but = "помощь"
 offer_but = "/offer"
+valute_but = "курс валют"
+extended_valute_but = "показать расширенный курс валют"
 text = """Привет,
 я обновился, и теперь ты можешь предложить любую функцию с помощью команды /offer и, возможно, в следующей версии она будет добавлена в этого бота.
 Кроме функций можно предлагать всё, что душе угодно, например, какие-либо косметические улучшения и тп.
@@ -47,7 +50,7 @@ bot = telebot.TeleBot(bot_id)
 
 #make individual keyboard with our commands
 keyboard1 = telebot.types.ReplyKeyboardMarkup()
-keyboard1.row(*keyboard, help_but)
+keyboard1.row(show_weather_but, help_but, valute_but)
 keyboard2 = telebot.types.ReplyKeyboardMarkup()
 button_geo = telebot.types.KeyboardButton(text=show_geo_but, request_location=True)
 keyboard2.row(button_geo, cancel_but)
@@ -83,7 +86,7 @@ def start_message(message):
 def start(message):
     global helpAns
     #ask user about his geolocation
-    if message.text == keyboard[0]:
+    if message.text == show_weather_but:
         bot.send_message(message.chat.id, "Поделись со мной своим геоположением и я тебе скажу погоду", reply_markup=keyboard2)
     #what to do when cancel button pressed
     elif message.text == cancel_but:
@@ -95,13 +98,25 @@ def start(message):
             res = f"{lib.getNumUsers(db_info)} - столько людей используют этого бота."
             bot.send_message(message.chat.id, res)
     
-    elif message.text == keyboard[1]:
+    elif message.text == joke_but:
         #joke = lib.getJoke()
         bot.send_message(message.chat.id, "Пока не работает, потому как я еще не нашел ресурс с хорошими шутками")
     
     elif message.text == offer_but:
         bot.send_message(message.chat.id, "Теперь можешь написать, что хотелось бы увидеть в этом боте или что можно исправить")
         bot.register_next_step_handler(message, lib.saveOffer, bot)
+    
+    elif message.text == valute_but:
+        markup = telebot.types.InlineKeyboardMarkup()
+        extended_valute_inline_but = telebot.types.InlineKeyboardButton(text=extended_valute_but, callback_data=str(message.chat.id))
+        markup.add(extended_valute_inline_but)
+        bot.send_message(message.chat.id, lib.getValute(), reply_markup=markup, parse_mode="Markdown")
+
+@bot.callback_query_handler(func=lambda call: True)
+def callback_query(call):
+    valuteData = [" ".join(elem) for elem in lib.getValuteExtended()]
+    for data in valuteData:
+        bot.send_message(call.data, data, parse_mode="Markdown")
 
 #when user sends his geolocation
 @bot.message_handler(content_types=['location'])

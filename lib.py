@@ -8,6 +8,9 @@ import time as t
 log.basicConfig(filename="/var/log/weatherman/log.txt", level=log.INFO, format="%(asctime)s:%(message)s")
 pathToOffers = "/var/log/weatherman/offers.txt"
 
+def group(it, cnt) -> list:
+    return list(zip(*[iter(it)] * cnt))
+
 def hashToDB(mess, db_info: list):
     c = 0
     with ps.connect(dbname=db_info[1], user=db_info[2]) as conn:
@@ -69,3 +72,24 @@ def appendToFile(mess: str, path: str) -> None:
 def saveOffer(message, bot):
     appendToFile(message.text, pathToOffers)
     bot.send_message(message.chat.id, "Спасибо!")
+
+def getValute() -> str:
+    data = r.get("https://www.cbr-xml-daily.ru/daily_json.js").json()
+    s = f'''{t.ctime()}
+$ -> {data["Valute"]["USD"]["Value"]} руб
+€ -> {data["Valute"]["EUR"]["Value"]} руб'''
+
+    return s
+
+def getValuteExtended() -> list:
+    data = r.get("https://www.cbr-xml-daily.ru/daily_json.js").json()
+    l = []
+    s = f"{t.ctime()}\n"
+    l.append(s)
+
+    for valute in data["Valute"]:
+        valuteData = data["Valute"][valute]
+        s = f'-  {valuteData["Name"]} -> {round(valuteData["Value"] / valuteData["Nominal"], 2)} руб\n'
+        l.append(s)
+    
+    return group(l, 12)
