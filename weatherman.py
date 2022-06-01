@@ -13,7 +13,7 @@ creator_path = "/home/projects/weatherman/creator"
 
 #define log format
 log.basicConfig(filename="/var/log/weatherman/log.txt", level=log.INFO, format="%(asctime)s:%(message)s")
-log.debug("App started!")
+log.info("App started!")
 
 #define some vars
 show_weather_but = "покажи погоду"
@@ -50,10 +50,10 @@ bot = telebot.TeleBot(bot_id)
 
 #make individual keyboard with our commands
 keyboard1 = telebot.types.ReplyKeyboardMarkup()
-keyboard1.row(show_weather_but, help_but, valute_but)
+keyboard1.row(help_but, valute_but, show_weather_but)
 keyboard2 = telebot.types.ReplyKeyboardMarkup()
 button_geo = telebot.types.KeyboardButton(text=show_geo_but, request_location=True)
-keyboard2.row(button_geo, cancel_but)
+keyboard2.row(cancel_but, button_geo)
 # help button's text
 helpAns = "Привет, я великий бот, показывающий погоду.\n\
 Все довольно просто, у меня есть 3 кнопки:\n\
